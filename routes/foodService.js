@@ -17,25 +17,37 @@ router.get('/findFreeFood', function(req, res, next) {
   var lon = req.header("lon");
   var latlon = encodeURIComponent(lat+","+lon)
 const TAPI_EXPLORER = `https://api.tomtom.com/search/2/reverseGeocode/${latlon}.json?key=${TAPIKey}`
-var obj;
+var Tobj;
 
 let fooPromise = new Promise((resolve, reject) => {
   request(TAPI_EXPLORER, function(err, response, body){
-    obj = JSON.parse(body);
-    resolve(obj);
+    Tobj = JSON.parse(body);
+    
+    Food.find({})
+
+  .populate({path: 'PId',
+  match: {city: Tobj.addresses[0].address.localName},
+  select: 'name lat lon'})
+  .exec(function(err, data){
+    resolve(data);
+  });
   });
 });
 
-fooPromise.then((obj) => {
-  Food.find({})
-  .populate({path: 'PId',
-match: {city: {$gte: obj.addresses[0].address.localName}},
-select: 'name'})
-.exec(function(err, data){
-  (err) ? res.json({restaurant: -1}) : res.json({restaurant: data.PId});
-});
-  
-console.log(obj.addresses[0].address.localName);
+fooPromise.then((myObj) => {
+var localProviders = [];
+for (let provider of myObj) {
+  localProviders.push({
+    provider_name: provider.PId.name,
+    provider_lat: provider.PId.lat,
+    provider_lon: provider.PId.lon,
+    food_name: provider.name,
+    food_description: provider.description,
+    food_date_posted: provider.date_posted
+  })
+}
+res.json({localProviders: localProviders});
+
 })
   });
 
@@ -43,10 +55,11 @@ module.exports = router;
 
 
 /*
-User.find()
-    .populate('comments posts') // multiple path names in one requires mongoose >= 3.6
-    .exec(function(err, usersDocuments) {
-        // handle err
-        // usersDocuments formatted as desired
-    });
+var allBackpacks = [];
+      for (let backpack of data){
+        allBackpacks.push({BpId: backpack.bpid,
+          BOId: backpack.id,
+        name: backpack.name,
+      description: backpack.description,
+    ownerid: backpack.ownerid[0]
 */

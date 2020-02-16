@@ -17,7 +17,7 @@ router.post('/add', function(req, res, next) {
     });
 
     food.save(function (err, food) {
-        (err) ? res.json({PId: '1'}) : res.json({PId: food._id});
+        (err) ? res.json({FId: '1'}) : res.json({FId: food._id});
     })
 });
 

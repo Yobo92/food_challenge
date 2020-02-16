@@ -6,7 +6,7 @@ var Food = new Schema ({
     name: {type: String, required: true},
     description: {type: String},
     date_posted: {type: String},
-    PId: {type: Schema.ObjectId, ref: 'Provider', required: true}   
+    PId: {type: mongoose.Schema.Types.ObjectId, ref: 'Provider', required: true}   
 });
 
 module.exports = mongoose.model('Food', Food);
