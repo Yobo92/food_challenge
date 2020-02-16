@@ -26,9 +26,10 @@ let fooPromise = new Promise((resolve, reject) => {
     Food.find({})
 
   .populate({path: 'PId',
-  match: {city: Tobj.addresses[0].address.localName},
+  $match: {city: Tobj.addresses[0].address.localName},
   select: 'name lat lon'})
   .exec(function(err, data){
+    console.log("from query: " +data);
     resolve(data);
   });
   });
@@ -36,17 +37,28 @@ let fooPromise = new Promise((resolve, reject) => {
 
 fooPromise.then((myObj) => {
 var localProviders = [];
-for (let provider of myObj) {
-  localProviders.push({
-    provider_name: provider.PId.name,
-    provider_lat: provider.PId.lat,
-    provider_lon: provider.PId.lon,
-    food_name: provider.name,
-    food_description: provider.description,
-    food_date_posted: provider.date_posted
-  })
+
+if(myObj[0].PId == null)
+{
+  res.json({localProviders: 0});
 }
-res.json({localProviders: localProviders});
+else 
+{
+  for (let provider of myObj) {
+    localProviders.push({
+      provider_name: provider.PId.name,
+      provider_lat: provider.PId.lat,
+      provider_lon: provider.PId.lon,
+      food_name: provider.name,
+      food_description: provider.description,
+      food_date_posted: provider.date_posted
+    })
+  }
+  res.json({localProviders: localProviders});
+}
+
+
+
 
 })
   });
